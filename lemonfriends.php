@@ -4,12 +4,9 @@
 <title>Lemon Aid</title>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="stylesheet" href="w3css\w3.css">
-<link rel="stylesheet" href="w3css\w3-theme-blue-grey.css">
-<link rel='stylesheet' href='w3css\css?family=Open+Sans'>
-<!---
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
---->
+<link rel="stylesheet" href="w3css/w3.css">
+<link rel="stylesheet" href="w3css/w3-theme-blue-grey.css">
+<link rel='stylesheet' href='w3css/css?family=Open+Sans'>
 <link rel="stylesheet" href="w3css\web-fonts-with-css\css\fontawesome-all.min.css">
 
 <style>
@@ -63,21 +60,50 @@
 		else {
 				document.f2.submit();
 			}
+			
 		}
 </script>
+
+<script type='text/javascript'>
+	function secSendRequest() {
+		var f_search=document.f3.search.value;
+		if(f_search==0) {
+			s1.innerHTML="<font color='red'>Field is Required</font>";
+		}
+			
+		else if(f_search>50) {
+			s2.innerHTML="<font color='red'>Characters should be less than 50 </font>";
+		}
+			
+		else {
+				document.f3.submit();
+			}
+		}
+</script>
+
 	
 </head>
 <body class="w3-theme-l5">
 
 <?php 
-	//Session_start(); 
-	//if(!isset($_SESSION["user_id"])) {
-	//	header("Location: lemonzone.php");
-	//}
+	Session_start(); 
+	if(!isset($_SESSION["user_id"])) {
+		header("Location: login.php");
+		exit;
+	}
 	
-	?>
+	if (empty($_POST['search'])) {
+		header("Location: lemonzone.php");
+		exit;
+	}
+	else {
+		$name=$_POST["search"];
+	}
+?>
+
 	
 	<?php
+	/***
 		Session_start();
 		$email=$password=$no_msg="";
 			
@@ -92,43 +118,12 @@
 				$no_msg = 1;
 		}
 		
-		function time_elapsed_string($datetime, $full = false) {
-			$now = new DateTime;
-			$ago = new DateTime($datetime);
-			$diff = $now->diff($ago);
-
-			$diff->w = floor($diff->d / 7);
-			$diff->d -= $diff->w * 7;
-
-			$string = array(
-				'y' => 'ano',
-				'm' => 'mês',
-				'w' => 'semana',
-				'd' => 'dia',
-				'h' => 'hora',
-				'i' => 'minuto',
-				's' => 'segundo',
-			);
-			foreach ($string as $k => &$v) {
-			if ($diff->$k) {
-				$v = $diff->$k . ' ' . $v . ($diff->$k > 1 ? 's' : '');
-			} else {
-				unset($string[$k]);
-				}
-			}
-
-			if (!$full) $string = array_slice($string, 0, 1);
-			return $string ? implode(', ', $string) . ' atrás' : 'agora mesmo';
-}
-
-
 		function sec($data) {
 			$data=trim($data);
 			$data=stripslashes($data);
 			$data=htmlspecialchars($data);
 			return $data;
 		}
-		
 		
 		if($_POST['h1']=="holla") {
 			$email=sec($_POST["e1"]);
@@ -166,6 +161,7 @@
 
 			MySQLi_Close($resid);		
 		}
+		***/
 	?>
 
 <!-- Navbar -->
@@ -209,7 +205,6 @@
         <div class="w3-container">
          <h4 class="w3-center">O Meu Perfil</h4>
          <p class="w3-center"><img src="images/avatar3.png" class="w3-circle" style="height:106px;width:106px" alt="Avatar"></p>
-		 <p class="w3-center"><?php echo $_SESSION["name"] ?></p>
          <hr>
          <p><i class="fa fa-pencil-alt fa-fw w3-margin-right w3-text-theme"></i> Designer, UI</p>
          <p><i class="fa fa-home fa-fw w3-margin-right w3-text-theme"></i> London, UK</p>
@@ -299,8 +294,8 @@
 							<p><textarea placeholder="Status: Feeling Lime!" name="status" class="w3-border w3-padding"></textarea></p>
 				
 							<button type="submit" onclick="secStatus()" class="w3-button w3-theme"><i class="fa fa-pencil-alt"></i>  Post</button> 
-							&nbsp;&nbsp;&nbsp;<i class="fa fa-camera fa-fw w3-margin-right"></i>
-							<i class="fa fa-file fa-fw w3-margin-right"></i>
+							&nbsp;&nbsp;<i class="fa fa-camera fa-fw w3-margin-right"></i>
+							&nbsp;&nbsp;<i class="fa fa-file fa-fw w3-margin-right"></i>
 							
 						</form>
 						
@@ -308,115 +303,113 @@
 				</div>
 			</div>
 		</div>
-		<!-- Updating status -->
-		<?php
-		
-		if(isset($_GET['error'])) { //SE EXISTIR ERRO 
-			?>
-			<script type="text/javascript" src="notify.js"></script>
-					<script>
-						$(document).ready(function() {
-						$.notify(
-						"Erro ao atualizar Status!","error");
-						});
-					</script>
-			
-			<?php
-		}
-		if(isset($_GET['status'])) { //SE EXISTIR STATUS 
-			?>	
-			<script type="text/javascript" src="notify.js"></script>
-					<script>
-						$(document).ready(function() {
-						$.notify(
-						"Estado atualizado!","success");
-						});
-					</script>
-			<?php
-		}
-		?>
-		<!--- fim de status --->
-		
-		<!--- aqui irá aparecer as mensagens dos amigos -->
-		<?php
-			$resid=MySQLi_Connect('localhost','root','root','shangout');
-			$count = MySQLi_Query($resid,"select frnd_two_id from are_friends where frnd_one_id = $user_here union select frnd_one_id from are_friends where frnd_two_id = $user_here");
-			if($count) {
-				$f=1;
-				while(($rows=MySQLi_Fetch_Row($count))==True) {
-					$f=2;
-					//$query = "select status,time_format(timestamp,'%l:%i:%s %p') as time,date_format(timestamp,'%D of %M,%Y') as date from status_here where user_id = $rows[0] order by id desc";
-					
-					$query = "select status,time_format(timestamp,'%l:%i:%s %p') as time, date_format(timestamp,'%Y-%m-%d') as date from status_here where user_id = $rows[0] order by id desc";
-					$queryx = "select name from students where id = $rows[0]";
-					$result = MySQLi_Query($resid,$query);
-					$result1 = MySQLi_Query($resid,$queryx);
-					$name_here =MySQLi_Fetch_Row($result1);
-					
-					if($result) {
-						while(($rows1=MySQLi_Fetch_Row($result))==True) {
-							
-							echo "<div class='w3-container w3-card w3-white w3-round w3-margin'><br>";
-							
-							echo "<img src='images/avatar2.png' alt='Avatar' class='w3-left w3-circle w3-margin-right' style='width:60px'>";						
-													
-							//echo "<span class='w3-right w3-opacity'>On ".$rows1[2]." at ".$rows1[1]."</span>";							
-							echo "<span class='w3-right w3-opacity'>".time_elapsed_string($rows1[2])."  </span>";
-																					
-							echo "<h4>".$name_here[0]."</h4><br>";
-							echo "<hr class='w3-clear'>";
-							echo "<p>".$rows1[0]."</p>";
-							
-							echo "<button type='button' class='w3-button w3-theme-d1 w3-margin-bottom'><i class='fa fa-thumbs-up'></i>  Curtir</button>";
-							echo "&nbsp;&nbsp;";
-							echo "<button type='button' class='w3-button w3-theme-d2 w3-margin-bottom'><i class='fa fa-comment'></i>  Comentar</button>";
-							
-							echo "</div>";
-											
-						}
-					}
-				}
-			}
-			MySQLi_Close($resid);	
-		
-		?>
-		<!--- fim da lista de mensagens --->
+	
 		
 		<div class="w3-container w3-card w3-white w3-round w3-margin"><br>
-        <img src="images/avatar2.png" alt="Avatar" class="w3-left w3-circle w3-margin-right" style="width:60px">
-        <span class="w3-right w3-opacity">1 min</span>
-        <h4>John Doe</h4><br>
+        <img src="images/addfriends.png" alt="Avatar" class="w3-left w3-circle w3-margin-right" style="width:60px">
+        <h4>Procurar amigos <i class='fa fa-search'></i></h4>
         <hr class="w3-clear">
-        <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
-        <div class="w3-row-padding" style="margin:0 -16px">
-            <div class="w3-half"><img src="images/lights.jpg" style="width:100%" alt="Northern Lights" class="w3-margin-bottom"></div>
-            <div class="w3-half"><img src="images/nature.jpg" style="width:100%" alt="Nature" class="w3-margin-bottom"></div>
-        </div>
-        <button type="button" class="w3-button w3-theme-d1 w3-margin-bottom"><i class="fa fa-thumbs-up"></i>  Curtir</button> 
-        <button type="button" class="w3-button w3-theme-d2 w3-margin-bottom"><i class="fa fa-comment"></i>  Comentar</button> 
+		
+		<?php
+	
+			if(IsSet($_POST["search"])) {
+		
+				include 'mysql.php';
+		
+				//$name=$_POST["search"];
+				
+				echo "<h6 class='w3-opacity'>A procurar: <strong>".$name."</strong></h6>";
+				$query="select * from students where name like '%".$name."%' or email like '%".$name."%'";		
+		
+				$result=MySQLi_Query($resid,$query);
+				if($result==true) {
+					$f=1;
+					while(($rows=MySQLi_Fetch_Row($result))==True) {
+						$f++;
+						if($f==2) {
+							echo "<span class='w3-opacity'>Resultados:</span><br />";
+							echo "<table width='75%' align='center'>";
+							echo "<tr>";
+						}
+				
+						//START:- Excluir se já foi enviado o pedido;
+						$query4="select status, comp from friends where id=(select max(id) from friends where receiver_id=".$rows[0]." and friend_id=".$_SESSION["user_id"].")"; 
+						$result4=MySQLi_Query($resid,$query4);
+				
+						if($result4==true) {
+							$res4=MySQLi_Fetch_Row($result4);
+						}
+							
+						if($res4[0]==NULL AND $res4[1]==NULL) {
+							$flo=0;
+						}
+						else if($res4[0]==0 AND $res4[1]==0){  
+								$flo=1;
+							}
+							else {
+									$flo=2;
+								}
+								
+						//START:- Excluir o próprio utilizador e os que já são amigos;
+						$query2="select status from are_friends where frnd_one_id=".$_SESSION["user_id"]." and frnd_two_id=".$rows[0]."";
+						$query3="select status from are_friends where frnd_one_id=".$rows[0]." and frnd_two_id=".$_SESSION["user_id"]."";
+							
+						$result2=MySQLi_Query($resid,$query2);
+						$result3=MySQLi_Query($resid,$query3);
+							
+						if($result2==true) {
+							$res2=MySQLi_Fetch_Row($result2);
+						} 
+				
+						if($result3==true) {
+							$res3=MySQLi_Fetch_Row($result3);
+						}
+							
+						if($rows[0]==$_SESSION["user_id"]) {
+							$flori=1;
+						} else {
+									$flori=2;
+						}  
+							
+						if($res2[0]==1 OR $res3[0]==1 OR $flo==1 OR $flori==1) {
+							
+						}
+						else {
+							echo "<td>".$rows[1]."</td><td><form method='POST' action='sendfr.php'>
+								<input type='hidden' name='h1' value='".$rows[0]."'>
+								<input type='hidden' name='h2' value='".$rows[1]."'>
+								<button type='submit' name='sfr' value='Send Request' class='w3-button w3-theme'><i class='fa fa-envelope'></i>  Enviar pedido de amizade</button>
+							</form></td></tr>";
+							
+						}
+						echo "</table>";
+					}
+								
+				}
+							
+				echo "<hr>";
+							
+											
+				if($f<2) {
+					echo " No such Friends!<br/>";
+				}
+						
+				MySQLi_Close($resid);	
+			}
+		?>
+
       </div>
+	  
+	  
+	  
       
       <div class="w3-container w3-card w3-white w3-round w3-margin"><br>
         <img src="images/avatar5.png" alt="Avatar" class="w3-left w3-circle w3-margin-right" style="width:60px">
-        <span class="w3-right w3-opacity">16 min</span>
-        <h4>Jane Doe</h4><br>
+        <h4>Amigos</h4><br>
         <hr class="w3-clear">
         <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
-        <button type="button" class="w3-button w3-theme-d1 w3-margin-bottom"><i class="fa fa-thumbs-up"></i>  Curtir</button> 
-        <button type="button" class="w3-button w3-theme-d2 w3-margin-bottom"><i class="fa fa-comment"></i>  Comentar</button> 
       </div>  
 
-      <div class="w3-container w3-card w3-white w3-round w3-margin"><br>
-        <img src="images/avatar6.png" alt="Avatar" class="w3-left w3-circle w3-margin-right" style="width:60px">
-        <span class="w3-right w3-opacity">32 min</span>
-        <h4>Angie Jane</h4><br>
-        <hr class="w3-clear">
-        <p>Have you seen this?</p>
-        <img src="images/nature.jpg" style="width:100%" class="w3-margin-bottom">
-        <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
-        <button type="button" class="w3-button w3-theme-d1 w3-margin-bottom"><i class="fa fa-thumbs-up"></i>  Curtir</button> 
-        <button type="button" class="w3-button w3-theme-d2 w3-margin-bottom"><i class="fa fa-comment"></i>  Comentar</button> 
-      </div> 
       
     <!-- End Middle Column -->
     </div>
@@ -439,7 +432,6 @@
 		<div class="w3-container">
 			<p>Amigos</p>
 			
-			
 			<form method='POST' name='f2' action='lemonfriends.php'>
 			
 				<i class="fa fa-search"></i>
@@ -448,7 +440,7 @@
 				<input type="text" name="search" maxlength="20" class="w3-input" onclick="secFriends()">
 				
 			</form>
-			
+				
 		</div>
 	
 	  
