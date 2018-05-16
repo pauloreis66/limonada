@@ -96,7 +96,7 @@
                                         <div class="text-center">
 											<input type="hidden" name="h1" value="holla">
 											<input type="button" value="Login" name="s1" onclick="sec()">
-											OR <a href='secure_signup.php'>Sign-up</a>
+											OR <a href='#'>Sign-up</a>
 											<!---
                                             <input type="submit" name="submit" value="Criar Contar" class="btn btn-primary btn-round">
 											--->

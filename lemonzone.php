@@ -68,30 +68,10 @@
 	
 </head>
 <body class="w3-theme-l5">
-
-<?php 
-	//Session_start(); 
-	//if(!isset($_SESSION["user_id"])) {
-	//	header("Location: lemonzone.php");
-	//}
-	
-	?>
 	
 	<?php
-		Session_start();
-		$email=$password=$no_msg="";
-			
-		if(!isset($_SESSION['user_id']) && !isset($_POST['h1'])) {
-			 Header("Location: login.php");
-		}
-			
-		if(isset($_SESSION['user_id'])) {
-				$_POST['h1'] = "holla";
-				$_POST['e1'] = $_SESSION['email'];
-				$_POST['p1'] = $_SESSION['password'];
-				$no_msg = 1;
-		}
-		
+	
+		//função para contar o tempo dos posts
 		function time_elapsed_string($datetime, $full = false) {
 			$now = new DateTime;
 			$ago = new DateTime($datetime);
@@ -119,8 +99,23 @@
 
 			if (!$full) $string = array_slice($string, 0, 1);
 			return $string ? implode(', ', $string) . ' atrás' : 'agora mesmo';
-}
-
+		}
+		
+		//verifica se está autenticado
+		Session_start();
+		$email=$password=$no_msg="";
+			
+		if(!isset($_SESSION['user_id']) && !isset($_POST['h1'])) {
+			 Header("Location: login.php");
+		}
+			
+		if(isset($_SESSION['user_id'])) {
+				$_POST['h1'] = "holla";
+				$_POST['e1'] = $_SESSION['email'];
+				$_POST['p1'] = $_SESSION['password'];
+				$no_msg = 1;
+		}
+		
 
 		function sec($data) {
 			$data=trim($data);
@@ -176,6 +171,7 @@
   <a href="#" class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white" title="Notícias"><i class="fa fa-globe"></i></a>
   <a href="#" class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white" title="Definições"><i class="fa fa-user"></i></a>
   <a href="#" class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white" title="Mensagens"><i class="fa fa-envelope"></i></a>
+  
   <div class="w3-dropdown-hover w3-hide-small">
     <button class="w3-button w3-padding-large" title="Notifications"><i class="fa fa-bell"></i><span class="w3-badge w3-right w3-small w3-green">3</span></button>     
     <div class="w3-dropdown-content w3-card-4 w3-bar-block" style="width:300px">
@@ -184,9 +180,16 @@
       <a href="#" class="w3-bar-item w3-button">Jane likes your post</a>
     </div>
   </div>
-  <a href="#" class="w3-bar-item w3-button w3-hide-small w3-right w3-padding-large w3-hover-white" title="A Minha Conta">
-    <img src="images/avatar2.png" class="w3-circle" style="height:23px;width:23px" alt="Avatar">
-  </a>
+  
+
+   <a href="logout.php" class="w3-bar-item w3-button w3-hide-small w3-right w3-padding-large w3-hover-white" title="Terminar sessão (Logout)">
+		<!---<img src="images/avatar2.png" class="w3-circle" style="height:23px;width:23px" alt="Avatar">
+		--->
+		<i class="fas fa-sign-out-alt"></i>
+   </a>
+
+
+	
  </div>
 </div>
 
@@ -209,7 +212,7 @@
         <div class="w3-container">
          <h4 class="w3-center">O Meu Perfil</h4>
          <p class="w3-center"><img src="images/avatar3.png" class="w3-circle" style="height:106px;width:106px" alt="Avatar"></p>
-		 <p class="w3-center"><?php echo $_SESSION["name"] ?></p>
+		 <p class="w3-center"><?php echo $_SESSION["name"]; ?></p>
          <hr>
          <p><i class="fa fa-pencil-alt fa-fw w3-margin-right w3-text-theme"></i> Designer, UI</p>
          <p><i class="fa fa-home fa-fw w3-margin-right w3-text-theme"></i> London, UK</p>
@@ -438,8 +441,7 @@
     <div class="w3-card w3-round w3-white w3-center">
 		<div class="w3-container">
 			<p>Amigos</p>
-			
-			
+						
 			<form method='POST' name='f2' action='lemonfriends.php'>
 			
 				<i class="fa fa-search"></i>
@@ -451,19 +453,60 @@
 			
 		</div>
 	
-	  
-        <div class="w3-container">
-          <p>Pedidos de amizade</p>
-          <img src="images/avatar6.png" alt="Avatar" style="width:50%"><br>
-          <span>Jane Doe</span>
-          <div class="w3-row w3-opacity">
-            <div class="w3-half">
-              <button class="w3-button w3-block w3-green w3-section" title="Accept"><i class="fa fa-check"></i></button>
-            </div>
-            <div class="w3-half">
-              <button class="w3-button w3-block w3-red w3-section" title="Decline"><i class="fa fa-remove"></i></button>
-            </div>
-          </div>
+		<!---verificar pedidos de amizade --->
+		<div class="w3-container">
+          
+		<?php
+			
+			$id=$_SESSION["user_id"];
+			$query="select friend_name,friend_id from friends where receiver_id=".$id." and status=0 and comp=0";
+			$res_id=MySQLi_Connect('localhost','root','root','shangout');
+				
+			if(MySQLi_Connect_Errno()) {
+						echo " Failed to connect to MySQL ";
+			}
+			else {
+				$result=MySQLi_Query($res_id,$query);
+				if($result==true) {
+					$f=1;
+					while(($rows=MySQLi_Fetch_Row($result))==True) {
+						$f++;
+						if($f==2) {
+							echo "<p>Pedidos de amizade</p>";
+						}
+						echo "<img src='images/avatar6.png' alt='Avatar' style='width:50%'><br>";
+						echo "<span>".$rows[0]."</span>";
+						?>
+						<form method="POST" action="access.php">
+						<input type="hidden" name="header1" value="<?php $rows[1] ?>">
+						<div class="w3-row w3-opacity">
+							<div class="w3-half">
+								<button type="submit" name="accp" class="w3-button w3-block w3-green w3-section" title="Accept"><i class="fa fa-check"></i></button>
+							</div>
+							<div class="w3-half">
+								<button type="submit" name="decl" class="w3-button w3-block w3-red w3-section" title="Decline"><i class="fa fa-times"></i></button>
+							</div>
+						</div>
+						</form>
+						<?php
+						
+						//echo "<span>".$rows[0].", wants to be your friend! <form method='POST' action='access.php'>
+						//	<input type='hidden' name='header1' value='".$rows[1]."'>
+						//	<input type='submit' name='accp' value='Accept'> &nbsp;&nbsp;&nbsp; <input type='submit' name='decl' value='Decline'>
+						//	</form></td> </tr>";
+							
+					}			
+				}	
+						
+				if($f<2) {
+							echo "<p>No Friend Requests!</p>";
+				}
+						
+				MySQLi_Close($res_id);	
+			}
+				
+		?>
+
         </div>
       </div>
 	  
